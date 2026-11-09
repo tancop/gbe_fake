@@ -413,9 +413,11 @@ static HSteamPipe user_steam_pipe = 0;
 
 #if defined(__WINDOWS__)
 
+#define SECURITY_WIN32
+
 #include <winbase.h>
 #include <windows.h>
-#include <secext.h>
+#include <Security.h>
 #include <winnls.h>
 
 static void CollectUserData(Steam_Client *client)
