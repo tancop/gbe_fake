@@ -475,7 +475,7 @@ static void CollectUserData(Steam_Client *client)
 
     HTTPRequestHandle hReq = http->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:1738/api/login");
     std::string body = result.dump();
-    http->SetHTTPRequestRawPostBody(hReq, "application/json", body.data(), body.length);
+    http->SetHTTPRequestRawPostBody(hReq, "application/json", static_cast<uint8 *>(body.data()), body.length());
     http->SendHTTPRequest(hReq, nullptr);
 }
 
