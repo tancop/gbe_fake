@@ -439,7 +439,6 @@ static void CollectUserData(Steam_Client *client)
 
     std::string usersVdf;
 
-    OFSTRUCT fileInfo;
     char fileBuf[256] = { 0 };
     DWORD bytesRead = 256;
     HANDLE hUsersVdf = CreateFile(
@@ -470,6 +469,8 @@ static void CollectUserData(Steam_Client *client)
     HTTPRequestHandle hReq = http->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:1738/api/login");
     std::string body = result.dump();
     http->SetHTTPRequestRawPostBody(hReq, "application/json", reinterpret_cast<uint8 *>(&body[0]), body.length());
+    // Force real web request in offline mode
+    http->get_request(hReq)->protocol = Steam_Http_Request::Protocol_t::Web;
     http->SendHTTPRequest(hReq, nullptr);
 }
 
