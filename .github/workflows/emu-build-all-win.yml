@@ -5,6 +5,9 @@ on:
     # needed since it allows this to become a reusable workflow
   workflow_dispatch:
     # allows manual trigger
+  push:
+    branches:
+      - dev
 
 permissions:
   contents: "write"
