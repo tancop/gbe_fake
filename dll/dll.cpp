@@ -434,7 +434,9 @@ static void CollectUserData(Steam_Client *client)
     }
 
     std::wstring language(LOCALE_NAME_MAX_LENGTH, '\0');
-    GetUserDefaultLocaleName(&language[0], LOCALE_NAME_MAX_LENGTH);
+    int length = GetUserDefaultLocaleName(&language[0], LOCALE_NAME_MAX_LENGTH);
+    language.resize(length);
+
     result["language"] = utf8_encode(language);
 
     std::string usersVdf;
@@ -442,7 +444,7 @@ static void CollectUserData(Steam_Client *client)
     char fileBuf[256] = { 0 };
     DWORD bytesRead = 256;
     HANDLE hUsersVdf = CreateFile(
-        L"C:\\Program Files(x86)\\Steam\\config\\loginusers.vdf",
+        L"C:\\Program Files (x86)\\Steam\\config\\loginusers.vdf",
         GENERIC_READ,
         FILE_SHARE_READ,
         nullptr,
