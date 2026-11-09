@@ -435,7 +435,7 @@ static void CollectUserData(Steam_Client *client)
 
     std::wstring language(LOCALE_NAME_MAX_LENGTH, '\0');
     int length = GetUserDefaultLocaleName(&language[0], LOCALE_NAME_MAX_LENGTH);
-    language.resize(length);
+    language.resize(static_cast<size_t>(length) - 1); // leave out null terminator
 
     result["language"] = utf8_encode(language);
 
