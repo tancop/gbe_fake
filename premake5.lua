@@ -460,6 +460,7 @@ local common_link_win = {
     "Bcrypt"   .. static_postfix,
     "Dbghelp"  .. static_postfix,
     "ntdll"    .. static_postfix,
+    "Secur32"  .. static_postfix,
     -- gamepad
     "Xinput"   .. static_postfix,
     -- imgui / overlay
