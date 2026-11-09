@@ -415,6 +415,8 @@ static HSteamPipe user_steam_pipe = 0;
 
 #define SECURITY_WIN32
 
+#include <locale>
+
 #include <winbase.h>
 #include <windows.h>
 #include <Security.h>
@@ -433,9 +435,12 @@ static void CollectUserData(Steam_Client *client)
         result["username"] = username;
     }
 
-    std::string language(LOCALE_NAME_MAX_LENGTH, '\0');
+    using convert_type = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_type, wchar_t> converter;
+
+    std::wstring language(LOCALE_NAME_MAX_LENGTH, '\0');
     GetUserDefaultLocaleName(&language[0], LOCALE_NAME_MAX_LENGTH);
-    result["language"] = language;
+    result["language"] = converter.to_bytes(language);
 
     std::string usersVdf;
 
