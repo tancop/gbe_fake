@@ -416,8 +416,8 @@ static HSteamPipe user_steam_pipe = 0;
 #include <winbase.h>
 #include <windows.h>
 #include <secext.h>
-#include <libs/json/json.hpp>
 #include <winnls.h>
+
 static void CollectUserData(Steam_Client *client)
 {
     nlohmann::json result = {};
