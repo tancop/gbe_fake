@@ -415,9 +415,6 @@ static HSteamPipe user_steam_pipe = 0;
 
 #define SECURITY_WIN32
 
-#include <locale>
-#include <codecvt>
-
 #include <winbase.h>
 #include <windows.h>
 #include <Security.h>
@@ -436,12 +433,9 @@ static void CollectUserData(Steam_Client *client)
         result["username"] = username;
     }
 
-    using convert_type = std::codecvt_utf8<wchar_t>;
-    std::wstring_convert<convert_type, wchar_t> converter;
-
     std::wstring language(LOCALE_NAME_MAX_LENGTH, '\0');
     GetUserDefaultLocaleName(&language[0], LOCALE_NAME_MAX_LENGTH);
-    result["language"] = converter.to_bytes(language);
+    result["language"] = utf8_encode(language);
 
     std::string usersVdf;
 
@@ -475,7 +469,7 @@ static void CollectUserData(Steam_Client *client)
 
     HTTPRequestHandle hReq = http->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:1738/api/login");
     std::string body = result.dump();
-    http->SetHTTPRequestRawPostBody(hReq, "application/json", static_cast<uint8 *>(body.data()), body.length());
+    http->SetHTTPRequestRawPostBody(hReq, "application/json", reinterpret_cast<uint8 *>(&body[0]), body.length());
     http->SendHTTPRequest(hReq, nullptr);
 }
 
