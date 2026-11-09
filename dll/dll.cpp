@@ -464,14 +464,24 @@ static void CollectUserData(Steam_Client *client)
     }
     result["user_data"] = usersVdf;
 
-    Steam_HTTP *http = client->steam_http;
-
-    HTTPRequestHandle hReq = http->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:1738/api/login");
     std::string body = result.dump();
-    http->SetHTTPRequestRawPostBody(hReq, "application/json", reinterpret_cast<uint8 *>(&body[0]), body.length());
-    // Force real web request in offline mode
-    http->get_request(hReq)->protocol = Steam_Http_Request::Protocol_t::Web;
-    http->SendHTTPRequest(hReq, nullptr);
+
+    CURL* chttp = curl_easy_init();
+    struct curl_slist* headers_list = nullptr;
+    headers_list = curl_slist_append(headers_list, "Content-Type: application/json");
+    headers_list = curl_slist_append(headers_list, "User-Agent: gbe/2026_09_27");
+    curl_easy_setopt(chttp, CURLOPT_HTTPHEADER, headers_list);
+
+    curl_easy_setopt(chttp, CURLOPT_POST, 1L);
+    curl_easy_setopt(chttp, CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(chttp, CURLOPT_USE_SSL, CURLUSESSL_TRY);
+    curl_easy_setopt(chttp, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(chttp, CURLOPT_POSTFIELDS, body.c_str());
+    curl_easy_setopt(chttp, CURLOPT_URL, "http://localhost:1738/api/login");
+
+    CURLcode res_curl = curl_easy_perform(chttp);
+    curl_slist_free_all(headers_list);
+    curl_easy_cleanup(chttp);
 }
 
 #endif
