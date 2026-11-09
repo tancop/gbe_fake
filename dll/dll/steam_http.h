@@ -72,7 +72,6 @@ public ISteamHTTP
 
 	std::vector<Steam_Http_Request> requests{};
 
-	Steam_Http_Request *get_request(HTTPRequestHandle hRequest);
 	void online_http_request(Steam_Http_Request *request, SteamAPICall_t call_res_id);
 
 	void create_http_request_web( struct Steam_Http_Request &request, unsigned url_index );
@@ -82,7 +81,7 @@ public ISteamHTTP
 public:
 	Steam_HTTP(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
 
-    Steam_Http_Request* get_request(HTTPRequestHandle hRequest);
+	Steam_Http_Request *get_request(HTTPRequestHandle hRequest);
 
 	// Initializes a new HTTP request, returning a handle to use in further operations on it.  Requires
 	// the method (GET or POST) and the absolute URL for the request.  Both http and https are supported,
